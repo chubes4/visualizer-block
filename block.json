@@ -1,0 +1,78 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "visualizer-block/visualizer",
+    "version": "1.0.0",
+    "title": "Particle System",
+    "category": "widgets",
+    "icon": "chart-area",
+    "description": "Interactive particle system with customizable effects, shapes, and mouse interactions.",
+    "keywords": ["particles", "animation", "canvas", "interactive", "effects"],
+    "textdomain": "visualizer-block",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        },
+        "color": {
+            "background": true,
+            "text": true
+        }
+    },
+    "attributes": {
+        "aspectRatio": {
+            "type": "number",
+            "default": 0.75
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "#000000"
+        },
+        "primaryColor": {
+            "type": "string",
+            "default": "#00ff00"
+        },
+        "secondaryColor": {
+            "type": "string",
+            "default": "#ff0000"
+        },
+        "animationSpeed": {
+            "type": "number",
+            "default": 1
+        },
+        "particleCount": {
+            "type": "number",
+            "default": 100
+        },
+        "particleSize": {
+            "type": "number",
+            "default": 3
+        },
+        "particleShape": {
+            "type": "string",
+            "default": "circle"
+        },
+        "connectionDistance": {
+            "type": "number",
+            "default": 100
+        },
+        "mouseInteraction": {
+            "type": "string",
+            "default": "attract"
+        },
+        "showTrails": {
+            "type": "boolean",
+            "default": false
+        },
+        "showControls": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "editorScript": "file:./build/index.js",
+    "editorStyle": "file:./build/index.css",
+    "style": "file:./src/style.css",
+    "viewScript": "file:./src/visualizer.js"
+} 

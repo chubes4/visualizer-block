@@ -1,0 +1,52 @@
+{
+  "name": "visualizer-block",
+  "version": "1.0.0",
+  "description": "Interactive canvas visualizations with customizable patterns and real-time controls.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "wp-scripts build src/index.js --output-path=build",
+    "start": "wp-scripts start src/index.js --output-path=build",
+    "dev": "wp-scripts start src/index.js --output-path=build",
+    "dist": "./build-dist.sh",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "format": "wp-scripts format",
+    "packages-update": "wp-scripts packages-update"
+  },
+  "keywords": [
+    "wordpress",
+    "gutenberg",
+    "block",
+    "visualizer",
+    "animation",
+    "canvas",
+    "interactive"
+  ],
+  "author": "Chris Huber <chris@chubes.net>",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://github.com/chubes/visualizer-block",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chubes/visualizer-block.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chubes/visualizer-block/issues"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.19.0"
+  },
+  "dependencies": {
+    "@wordpress/block-editor": "^12.20.0",
+    "@wordpress/blocks": "^12.29.0",
+    "@wordpress/components": "^25.16.0",
+    "@wordpress/element": "^5.29.0",
+    "@wordpress/i18n": "^4.52.0"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": ">=8"
+  },
+  "browserslist": [
+    "extends @wordpress/browserslist-config"
+  ]
+} 

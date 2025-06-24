@@ -1,0 +1,82 @@
+/**
+ * Editor-specific styles for Visualizer Block
+ * These styles only apply in the WordPress block editor
+ */
+
+.visualizer-block-editor {
+    min-height: 200px;
+    border: 2px dashed #e1e5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.visualizer-block-editor .components-card {
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+.visualizer-block-editor .components-card__body {
+    padding: 0;
+}
+
+.visualizer-preview {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.visualizer-preview canvas {
+    opacity: 0.3;
+}
+
+.visualizer-preview-overlay {
+    position: absolute;
+    text-align: center;
+    z-index: 1;
+}
+
+.visualizer-preview-overlay h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #1e1e1e;
+}
+
+.visualizer-preview-overlay p {
+    margin: 0.25rem 0;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.visualizer-preview-overlay small {
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Inspector Controls Styling */
+.components-panel__body .visualizer-control-note {
+    padding: 0.75rem;
+    background: #f0f6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 4px;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    color: #1e40af;
+}
+
+.components-base-control__label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Color palette overrides for better integration */
+.components-circular-option-picker__option-wrapper {
+    margin: 4px;
+} 
