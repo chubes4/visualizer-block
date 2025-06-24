@@ -1,6 +1,6 @@
 /**
  * Interactive Particle System
- * Advanced particle effects with mouse interaction, shapes, and trails
+ * Core particle effects with mouse interaction and rendering
  */
 
 class ParticleSystem {
@@ -8,16 +8,15 @@ class ParticleSystem {
         this.container = container;
         this.config = {
             aspectRatio: 0.75, // Height as ratio of width (3:4 by default)
-            backgroundColor: '#000000',
-            primaryColor: '#00ff00',
-            secondaryColor: '#ff0000',
+            backgroundColor: '#0a0a0a',
+            primaryColor: '#64ffda',
+            secondaryColor: '#ff6b9d',
             animationSpeed: 1,
-            particleCount: 100,
+            particleCount: 150,
             particleSize: 3,
             particleShape: 'circle',
             connectionDistance: 100,
             mouseInteraction: 'attract',
-            showTrails: false,
             showControls: true,
             ...config
         };
@@ -28,7 +27,8 @@ class ParticleSystem {
         this.particles = [];
         this.time = 0;
         this.mouse = { x: 0, y: 0, isActive: false };
-        this.trails = [];
+        this.canvasWidth = 0;
+        this.canvasHeight = 0;
         
         // Calculate responsive dimensions
         this.updateCanvasDimensions();
@@ -49,9 +49,13 @@ class ParticleSystem {
     
     init() {
         this.createCanvas();
-        this.setupControls();
         this.initializeParticles();
         this.setupEventListeners();
+        
+        // Initialize modules AFTER canvas is created
+        this.controlCenter = new window.VisualizerControlCenter(this);
+        this.fullscreenManager = new window.VisualizerFullscreenManager(this);
+        
         this.startAnimation();
     }
     
@@ -95,134 +99,11 @@ class ParticleSystem {
         window.addEventListener('resize', () => this.handleResize());
     }
     
-    setupControls() {
-        if (!this.config.showControls) return;
-        
-        const controlsContainer = document.createElement('div');
-        controlsContainer.className = 'visualizer-controls';
-        controlsContainer.innerHTML = this.getControlsHTML();
-        
-        this.container.appendChild(controlsContainer);
-        this.bindControlEvents(controlsContainer);
-    }
-    
-    getControlsHTML() {
-        return `
-            <h3 class="visualizer-controls__title">Particle System Controls</h3>
-            <div class="visualizer-controls__grid">
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Particle Shape</label>
-                    <select class="visualizer-control-select" data-control="particleShape">
-                        <option value="circle" ${this.config.particleShape === 'circle' ? 'selected' : ''}>Circles</option>
-                        <option value="square" ${this.config.particleShape === 'square' ? 'selected' : ''}>Squares</option>
-                        <option value="triangle" ${this.config.particleShape === 'triangle' ? 'selected' : ''}>Triangles</option>
-                        <option value="star" ${this.config.particleShape === 'star' ? 'selected' : ''}>Stars</option>
-                    </select>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Mouse Interaction</label>
-                    <select class="visualizer-control-select" data-control="mouseInteraction">
-                        <option value="none" ${this.config.mouseInteraction === 'none' ? 'selected' : ''}>None</option>
-                        <option value="attract" ${this.config.mouseInteraction === 'attract' ? 'selected' : ''}>Attract</option>
-                        <option value="repel" ${this.config.mouseInteraction === 'repel' ? 'selected' : ''}>Repel</option>
-                        <option value="orbit" ${this.config.mouseInteraction === 'orbit' ? 'selected' : ''}>Orbit</option>
-                    </select>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Particle Color</label>
-                    <div class="visualizer-color-control">
-                        <input type="color" class="visualizer-color-input" value="${this.config.primaryColor}" data-control="primaryColor">
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Connection Color</label>
-                    <div class="visualizer-color-control">
-                        <input type="color" class="visualizer-color-input" value="${this.config.secondaryColor}" data-control="secondaryColor">
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Background Color</label>
-                    <div class="visualizer-color-control">
-                        <input type="color" class="visualizer-color-input" value="${this.config.backgroundColor}" data-control="backgroundColor">
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Particle Count</label>
-                    <div class="visualizer-range-control">
-                        <input type="range" class="visualizer-range-input" min="10" max="500" step="10" value="${this.config.particleCount}" data-control="particleCount">
-                        <div class="visualizer-range-value">${this.config.particleCount}</div>
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Particle Size</label>
-                    <div class="visualizer-range-control">
-                        <input type="range" class="visualizer-range-input" min="1" max="10" step="0.5" value="${this.config.particleSize}" data-control="particleSize">
-                        <div class="visualizer-range-value">${this.config.particleSize}</div>
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Animation Speed</label>
-                    <div class="visualizer-range-control">
-                        <input type="range" class="visualizer-range-input" min="0.1" max="3" step="0.1" value="${this.config.animationSpeed}" data-control="animationSpeed">
-                        <div class="visualizer-range-value">${this.config.animationSpeed}</div>
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Connection Distance</label>
-                    <div class="visualizer-range-control">
-                        <input type="range" class="visualizer-range-input" min="50" max="200" step="10" value="${this.config.connectionDistance}" data-control="connectionDistance">
-                        <div class="visualizer-range-value">${this.config.connectionDistance}</div>
-                    </div>
-                </div>
-                
-                <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Effects</label>
-                    <label class="visualizer-checkbox-control">
-                        <input type="checkbox" ${this.config.showTrails ? 'checked' : ''} data-control="showTrails">
-                        Show Particle Trails
-                    </label>
-                </div>
-            </div>
-        `;
-    }
-    
-    bindControlEvents(container) {
-        const controls = container.querySelectorAll('[data-control]');
-        
-        controls.forEach(control => {
-            const property = control.dataset.control;
-            
-            control.addEventListener('change', (e) => {
-                let value = e.target.value;
-                
-                // Convert numeric values
-                if (['animationSpeed', 'particleCount', 'particleSize', 'connectionDistance'].includes(property)) {
-                    value = parseFloat(value);
-                }
-                
-                // Convert boolean values
-                if (property === 'showTrails') {
-                    value = e.target.checked;
-                }
-                
-                this.config[property] = value;
-                this.updateParticleSystem();
-                
-                // Update range value display
-                const valueDisplay = control.parentNode.querySelector('.visualizer-range-value');
-                if (valueDisplay) {
-                    valueDisplay.textContent = value;
-                }
-            });
-        });
+    onConfigChange(property, value) {
+        // Handle specific config changes that require updates
+        if (property === 'particleCount' || property === 'particleSize') {
+            this.updateParticleSystem();
+        }
     }
     
     initializeParticles() {
@@ -258,8 +139,9 @@ class ParticleSystem {
             const particle = this.createParticle(x, y);
             particle.vx = Math.cos(angle) * speed;
             particle.vy = Math.sin(angle) * speed;
-            particle.life = 1;
-            particle.maxLife = 0.5 + Math.random() * 0.5;
+            particle.maxLife = 1.0 + Math.random() * 1.0;
+            particle.life = particle.maxLife;
+            particle.isBurst = true; // Mark as burst particle
             this.particles.push(particle);
         }
     }
@@ -275,7 +157,7 @@ class ParticleSystem {
         
         // Update existing particles with new size
         this.particles.forEach(particle => {
-            if (particle.life === 1) { // Only update permanent particles
+            if (particle.life === 1 && !particle.isBurst) { // Only update permanent particles
                 particle.size = this.config.particleSize * (0.5 + Math.random() * 0.5);
             }
         });
@@ -308,7 +190,7 @@ class ParticleSystem {
             particle.angle += particle.rotationSpeed;
             
             // Handle life cycle for burst particles
-            if (particle.life < 1) {
+            if (particle.isBurst) {
                 particle.life -= 0.01;
                 if (particle.life <= 0) {
                     this.particles.splice(index, 1);
@@ -321,25 +203,7 @@ class ParticleSystem {
             if (particle.x > this.canvasWidth) particle.x = 0;
             if (particle.y < 0) particle.y = this.canvasHeight;
             if (particle.y > this.canvasHeight) particle.y = 0;
-            
-            // Add to trails
-            if (this.config.showTrails) {
-                this.trails.push({
-                    x: particle.x,
-                    y: particle.y,
-                    life: 1,
-                    size: particle.size * 0.5
-                });
-            }
         });
-        
-        // Update trails
-        if (this.config.showTrails) {
-            this.trails = this.trails.filter(trail => {
-                trail.life -= 0.02;
-                return trail.life > 0;
-            });
-        }
     }
     
     applyMouseInteraction(particle) {
@@ -354,48 +218,30 @@ class ParticleSystem {
             
             switch (this.config.mouseInteraction) {
                 case 'attract':
-                    particle.vx += Math.cos(angle) * force * 0.3;
-                    particle.vy += Math.sin(angle) * force * 0.3;
+                    particle.vx += Math.cos(angle) * force * 0.1;
+                    particle.vy += Math.sin(angle) * force * 0.1;
                     break;
                     
                 case 'repel':
-                    particle.vx -= Math.cos(angle) * force * 0.3;
-                    particle.vy -= Math.sin(angle) * force * 0.3;
+                    particle.vx -= Math.cos(angle) * force * 0.1;
+                    particle.vy -= Math.sin(angle) * force * 0.1;
                     break;
                     
                 case 'orbit':
                     const perpAngle = angle + Math.PI / 2;
-                    particle.vx += Math.cos(perpAngle) * force * 0.2;
-                    particle.vy += Math.sin(perpAngle) * force * 0.2;
-                    particle.vx += Math.cos(angle) * force * 0.1;
-                    particle.vy += Math.sin(angle) * force * 0.1;
+                    particle.vx += Math.cos(perpAngle) * force * 0.07;
+                    particle.vy += Math.sin(perpAngle) * force * 0.07;
+                    particle.vx += Math.cos(angle) * force * 0.03;
+                    particle.vy += Math.sin(angle) * force * 0.03;
                     break;
             }
         }
     }
     
     render() {
-        // Clear canvas with trail effect or solid background
-        if (this.config.showTrails) {
-            this.ctx.fillStyle = this.config.backgroundColor + '20'; // Semi-transparent
-            this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-        } else {
-            this.ctx.fillStyle = this.config.backgroundColor;
-            this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-        }
-        
-        // Render trails
-        if (this.config.showTrails) {
-            this.trails.forEach(trail => {
-                this.ctx.save();
-                this.ctx.globalAlpha = trail.life * 0.3;
-                this.ctx.fillStyle = this.config.primaryColor;
-                this.ctx.beginPath();
-                this.ctx.arc(trail.x, trail.y, trail.size, 0, Math.PI * 2);
-                this.ctx.fill();
-                this.ctx.restore();
-            });
-        }
+        // Clear canvas with solid background
+        this.ctx.fillStyle = this.config.backgroundColor;
+        this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         
         // Render connections
         this.renderConnections();
@@ -404,11 +250,6 @@ class ParticleSystem {
         this.particles.forEach(particle => {
             this.renderParticle(particle);
         });
-        
-        // Render mouse cursor effect
-        if (this.mouse.isActive && this.config.mouseInteraction !== 'none') {
-            this.renderMouseEffect();
-        }
     }
     
     renderConnections() {
@@ -496,24 +337,6 @@ class ParticleSystem {
         this.ctx.closePath();
     }
     
-    renderMouseEffect() {
-        this.ctx.save();
-        this.ctx.globalAlpha = 0.3;
-        this.ctx.strokeStyle = this.config.secondaryColor;
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.arc(this.mouse.x, this.mouse.y, 30, 0, Math.PI * 2);
-        this.ctx.stroke();
-        
-        // Pulsing effect
-        const pulseRadius = 30 + Math.sin(this.time * 5) * 10;
-        this.ctx.globalAlpha = 0.1;
-        this.ctx.beginPath();
-        this.ctx.arc(this.mouse.x, this.mouse.y, pulseRadius, 0, Math.PI * 2);
-        this.ctx.stroke();
-        this.ctx.restore();
-    }
-    
     handleResize() {
         // Recalculate dimensions based on new container size
         this.updateCanvasDimensions();
@@ -534,15 +357,38 @@ class ParticleSystem {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
+        
+        // Clean up modules
+        if (this.fullscreenManager) {
+            this.fullscreenManager.destroy();
+        }
+        
+        if (this.controlCenter) {
+            this.controlCenter.destroy();
+        }
+        
+        // Remove event listeners
         window.removeEventListener('resize', this.handleResize);
     }
 }
 
 // Initialize particle systems when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    const visualizerBlocks = document.querySelectorAll('.wp-block-visualizer-block-visualizer');
+    // Use a more specific selector and avoid duplicates
+    const visualizerBlocks = document.querySelectorAll('[data-config]');
+    
+    // Track initialized blocks to prevent duplicates
+    const initializedBlocks = new Set();
     
     visualizerBlocks.forEach(block => {
+        // Skip if already initialized
+        if (initializedBlocks.has(block)) {
+            return;
+        }
+        
+        // Mark as initialized
+        initializedBlocks.add(block);
+        
         // Extract configuration from block attributes (set by PHP render)
         const config = JSON.parse(block.dataset.config || '{}');
         

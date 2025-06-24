@@ -32,7 +32,7 @@
         },
         "primaryColor": {
             "type": "string",
-            "default": "#00ff00"
+            "default": "#00c2ff"
         },
         "secondaryColor": {
             "type": "string",

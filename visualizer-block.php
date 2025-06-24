@@ -111,10 +111,28 @@ class VisualizerBlock {
                 filemtime(plugin_dir_path(__FILE__) . 'src/style.css')
             );
             
+            // Enqueue individual modules first
+            wp_enqueue_script(
+                'visualizer-block-fullscreen-manager',
+                plugin_dir_url(__FILE__) . 'src/fullscreen-manager.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/fullscreen-manager.js'),
+                true
+            );
+            
+            wp_enqueue_script(
+                'visualizer-block-control-center',
+                plugin_dir_url(__FILE__) . 'src/control-center.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/control-center.js'),
+                true
+            );
+            
+            // Enqueue main visualizer (depends on modules)
             wp_enqueue_script(
                 'visualizer-block-frontend',
                 plugin_dir_url(__FILE__) . 'src/visualizer.js',
-                [],
+                ['visualizer-block-fullscreen-manager', 'visualizer-block-control-center'],
                 filemtime(plugin_dir_path(__FILE__) . 'src/visualizer.js'),
                 true
             );
