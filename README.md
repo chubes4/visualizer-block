@@ -1,15 +1,19 @@
 # Visualizer Block
 
-A dynamic data visualization WordPress block with interactive controls and real-time canvas rendering. Create stunning animated visualizations that your visitors can customize in real-time.
+An interactive particle system WordPress block with real-time controls and canvas rendering. Create stunning animated particle visualizations that your visitors can customize in real-time.
 
 ## Features
 
-- **Multiple Visualization Types**: Particles, wave patterns, geometric shapes, and data flows
-- **Interactive Frontend Controls**: Visitors can customize colors, animation speed, and particle count
+- **Interactive Particle System**: Advanced particle effects with customizable shapes and behaviors
+- **Multiple Particle Shapes**: Circles, squares, triangles, and stars
+- **Mouse Interaction Modes**: Attract, repel, orbit, or no interaction
+- **Real-time Controls**: Visitors can customize colors, animation speed, particle count, and effects
 - **Canvas-Based Rendering**: Smooth 60fps animations using HTML5 Canvas API
+- **Responsive Design**: Automatically adapts to container width with configurable aspect ratio
+- **Trail Effects**: Optional particle trails with transparency
+- **Connection Lines**: Dynamic connections between nearby particles
 - **Gutenberg Integration**: Full block editor support with live preview
-- **Responsive Design**: Automatically adapts to different screen sizes
-- **Modern WordPress Standards**: Built with block.json and follows WordPress coding standards
+- **Modern WordPress Standards**: Built with block.json API v2 and follows WordPress coding standards
 
 ## Demo
 
@@ -22,7 +26,7 @@ See it in action at [chubes.net/visualizer](https://chubes.net/visualizer)
 1. Download the latest release ZIP file
 2. Go to `Plugins > Add New > Upload Plugin`
 3. Upload the ZIP file and activate the plugin
-4. The "Data Visualizer" block will be available in the block editor
+4. The "Particle System" block will be available in the block editor
 
 ### Manual Installation
 
@@ -34,14 +38,17 @@ See it in action at [chubes.net/visualizer](https://chubes.net/visualizer)
 
 ```bash
 # Clone the repository
-git clone https://github.com/chubes/visualizer-block.git
+git clone https://github.com/chubes4/visualizer-block.git
 cd visualizer-block
 
-# Install dependencies (if you plan to build from source)
+# Install dependencies
 npm install
 
 # Build the block assets
 npm run build
+
+# Create distribution package
+npm run dist
 ```
 
 ## Usage
@@ -50,42 +57,63 @@ npm run build
 
 1. Create a new post or page
 2. Click the "+" to add a new block
-3. Search for "Data Visualizer" or find it in the Widgets category
+3. Search for "Particle System" or find it in the Widgets category
 4. Insert the block
 
 ### Block Settings
 
-Use the block inspector (sidebar) to configure:
+The particle system automatically takes the full width of its container. Configure these settings in the block inspector:
 
-- **Visualization Type**: Choose from particles, waves, geometry, or data flow
-- **Canvas Dimensions**: Set width and height (400-1200px width, 300-800px height)
-- **Colors**: Customize background, primary, and secondary colors
+- **Aspect Ratio**: Controls the height-to-width ratio of the visualization (default: 0.75)
+- **Colors**: Background, particle, and connection line colors
 - **Animation Speed**: Control the speed of animations (0.1x to 3x)
-- **Particle Count**: Adjust the number of particles (10-500)
-- **Frontend Controls**: Toggle whether visitors can customize the visualization
+- **Particle Count**: Number of particles in the system (10-500)
+- **Particle Size**: Size of individual particles
+- **Particle Shape**: Choose from circles, squares, triangles, or stars
+- **Connection Distance**: How close particles need to be to connect
+- **Mouse Interaction**: How particles respond to mouse movement (attract, repel, orbit, none)
+- **Show Trails**: Enable particle trail effects
+- **Show Controls**: Toggle whether visitors can customize the visualization
 
 ### Frontend Interaction
 
 When frontend controls are enabled, visitors can:
 
-- Change visualization types in real-time
+- Change particle shapes in real-time
+- Switch between mouse interaction modes
 - Adjust colors using color pickers
-- Control animation speed and particle count
+- Control animation speed, particle count, and size
+- Enable/disable trail effects
+- Click to create particle bursts
 - See changes applied immediately
 
-## Visualization Types
+### Mouse Interactions
 
-### Particles
-Interactive particle system with connections between nearby particles. Great for network visualizations and abstract backgrounds.
+- **Attract**: Particles are drawn toward the mouse cursor
+- **Repel**: Particles move away from the mouse cursor  
+- **Orbit**: Particles orbit around the mouse cursor
+- **None**: No mouse interaction
 
-### Wave Pattern
-Animated sine waves with multiple layers. Perfect for audio visualizations and flowing designs.
+## Technical Features
 
-### Geometric Shapes
-Rotating geometric patterns with customizable colors. Ideal for modern, abstract designs.
+### Responsive Design
+- Automatically calculates canvas dimensions based on container width
+- Maintains aspect ratio across different screen sizes
+- Minimum height enforcement for very narrow containers
+- Proper canvas scaling for high-DPI displays
 
-### Data Flow
-Vertical data streams with animated nodes and connections. Excellent for representing data movement or processes.
+### Performance Optimizations
+- Uses `requestAnimationFrame` for smooth 60fps animations
+- Dynamic asset loading - frontend assets only load when block is present
+- Efficient particle system with proper cleanup
+- Memory management for trails and particle bursts
+
+### WordPress Integration
+- Modern block development with block.json API v2
+- Dynamic asset versioning using `filemtime()`
+- Proper sanitization and security measures
+- Accessibility considerations
+- Clean, semantic HTML output
 
 ## Customization
 
@@ -105,35 +133,19 @@ The plugin uses modular CSS classes you can override:
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
-```
 
-### JavaScript Extension
-
-Extend the visualizer with custom rendering:
-
-```javascript
-// Add custom visualization type
-document.addEventListener('DOMContentLoaded', function() {
-    // Access the VisualizerRenderer class
-    const originalRender = VisualizerRenderer.prototype.render;
-    
-    VisualizerRenderer.prototype.render = function() {
-        if (this.config.visualizationType === 'custom') {
-            // Your custom rendering logic
-            this.renderCustomVisualization();
-        } else {
-            originalRender.call(this);
-        }
-    };
-});
+/* Make canvas take full width */
+.wp-block-visualizer-block-visualizer {
+    width: 100%;
+}
 ```
 
 ## Development
 
 ### Requirements
 
-- WordPress 6.0+
-- PHP 8.0+
+- WordPress 5.0+
+- PHP 7.4+
 - Node.js 16+ (for development)
 
 ### File Structure
@@ -141,13 +153,17 @@ document.addEventListener('DOMContentLoaded', function() {
 ```
 visualizer-block/
 ├── visualizer-block.php          # Main plugin file
-├── blocks/visualizer/
-│   ├── block.json                # Block configuration
+├── block.json                    # Block configuration
+├── src/
 │   ├── index.js                  # Editor JavaScript
 │   ├── editor.css                # Editor styles
 │   ├── style.css                 # Frontend styles
-│   └── visualizer.js             # Frontend rendering
+│   └── visualizer.js             # Frontend particle system
+├── build/                        # Compiled assets (generated)
+├── dist/                         # Distribution package (generated)
 ├── package.json                  # Build configuration
+├── webpack.config.js             # Webpack configuration
+├── build-dist.sh                 # Distribution build script
 └── README.md                     # Documentation
 ```
 
@@ -163,6 +179,9 @@ npm run start
 # Production build
 npm run build
 
+# Create distribution package
+npm run dist
+
 # Lint code
 npm run lint
 ```
@@ -177,20 +196,7 @@ add_filter('visualizer_block_default_attributes', function($attributes) {
     $attributes['primaryColor'] = '#ff6b6b';
     return $attributes;
 });
-
-// Add custom visualization types
-add_filter('visualizer_block_types', function($types) {
-    $types['spiral'] = __('Spiral Pattern', 'visualizer-block');
-    return $types;
-});
 ```
-
-## Performance
-
-- **Optimized Rendering**: Uses requestAnimationFrame for smooth 60fps animations
-- **Dynamic Loading**: Frontend assets only load when block is present
-- **Responsive Canvas**: Automatically scales for different screen sizes
-- **Memory Efficient**: Proper cleanup of animation loops and event listeners
 
 ## Browser Support
 
@@ -202,45 +208,19 @@ add_filter('visualizer_block_types', function($types) {
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-visualization`
-3. Make your changes and test thoroughly
-4. Commit your changes: `git commit -am 'Add new visualization type'`
-5. Push to the branch: `git push origin feature/new-visualization`
-6. Submit a pull request
-
-### Coding Standards
-
-- Follow WordPress PHP coding standards
-- Use ESLint configuration for JavaScript
-- Write meaningful commit messages
-- Include tests for new features
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the GPL v2 or later - see the [LICENSE](LICENSE) file for details.
+GPL v2 or later
 
-## Credits
+## Author
 
-- **Author**: [Chris Huber](https://chubes.net)
-- **Canvas API**: HTML5 Canvas for rendering
-- **WordPress**: Built for the WordPress block editor
+Created by Chris Huber (https://chubes.net)
 
-## Support
+## Version
 
-- **Issues**: [GitHub Issues](https://github.com/chubes/visualizer-block/issues)
-- **Documentation**: This README and inline code comments
-- **Community**: WordPress.org support forums
-
-## Changelog
-
-### 1.0.0
-- Initial release
-- Four visualization types: particles, waves, geometry, data flow
-- Full Gutenberg editor integration
-- Interactive frontend controls
-- Responsive design
-- Modern WordPress standards compliance
-
----
-
-Made with ❤️ for the WordPress community 
+1.0.0 
