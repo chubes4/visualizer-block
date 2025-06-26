@@ -226,7 +226,7 @@ window.VisualizerFullscreenManager = class FullscreenManager {
         // Hide controls completely
         this.visualizer.controlCenter.hide();
         
-        // Create exit button (hidden by default)
+        // Create exit button (hidden by default on desktop, visible on mobile)
         this.createFullscreenExitButton();
         
         // Set up resize listener for fullscreen mode
@@ -240,8 +240,16 @@ window.VisualizerFullscreenManager = class FullscreenManager {
         // Update canvas for fullscreen
         this.updateFullscreenDimensions();
         
-        // Set up pull-up tray system instead of old mouse detection
+        // Set up pull-up tray system
         this.setupPullUpTray();
+        
+        // Mobile-specific: Show controls immediately for better UX
+        if (this.isMobile) {
+            // Show exit button immediately on mobile
+            setTimeout(() => this.showExitButton(), 100);
+            // Show tray handle immediately on mobile
+            setTimeout(() => this.showTrayHandle(), 100);
+        }
     }
     
     onExitFullscreen() {
@@ -281,7 +289,33 @@ window.VisualizerFullscreenManager = class FullscreenManager {
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
         `;
-        this.fullscreenExitButton.addEventListener('click', () => this.exitFullscreen());
+        
+        // Enhanced mobile support for exit button
+        const handleExitFullscreen = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.exitFullscreen();
+        };
+        
+        // Add both click and touch events
+        this.fullscreenExitButton.addEventListener('click', handleExitFullscreen);
+        this.fullscreenExitButton.addEventListener('touchstart', handleExitFullscreen);
+        
+        // Add visual feedback for mobile touches
+        if (this.isMobile) {
+            this.fullscreenExitButton.addEventListener('touchstart', () => {
+                this.fullscreenExitButton.style.backgroundColor = 'rgba(220, 38, 38, 0.8)';
+                this.fullscreenExitButton.style.transform = 'scale(1.1)';
+            });
+            
+            this.fullscreenExitButton.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    this.fullscreenExitButton.style.backgroundColor = '';
+                    this.fullscreenExitButton.style.transform = '';
+                }, 150);
+            });
+        }
+        
         this.visualizer.container.appendChild(this.fullscreenExitButton);
     }
     
@@ -352,6 +386,49 @@ window.VisualizerFullscreenManager = class FullscreenManager {
     }
     
     /**
+     * Handle touch events for mobile tray detection
+     */
+    handleTrayTouch(e) {
+        if (!this.isFullscreen) return;
+        
+        const touch = e.touches[0] || e.changedTouches[0];
+        if (!touch) return;
+        
+        const windowHeight = window.innerHeight;
+        const bottomZone = windowHeight * 0.875; // Bottom 1/8th (87.5% down)
+        
+        // Show tray handle when touch is in bottom zone
+        if (touch.clientY >= bottomZone) {
+            this.showTrayHandle();
+        } else {
+            // Hide tray handle (but not control panel if it's open)
+            this.hideTrayHandle();
+        }
+    }
+    
+    /**
+     * Handle touch events for mobile exit button detection
+     */
+    handleExitButtonTouch(e) {
+        if (!this.isFullscreen) return;
+        
+        const touch = e.touches[0] || e.changedTouches[0];
+        if (!touch) return;
+        
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const topRightZoneX = windowWidth * 0.875; // Right 1/8th (87.5% across)
+        const topRightZoneY = windowHeight * 0.125; // Top 1/8th (12.5% down)
+        
+        // Show exit button when touch is in top-right zone
+        if (touch.clientX >= topRightZoneX && touch.clientY <= topRightZoneY) {
+            this.showExitButton();
+        } else {
+            this.hideExitButton();
+        }
+    }
+    
+    /**
      * Create the control tray handle that appears at bottom of screen
      */
     createControlTrayHandle() {
@@ -366,10 +443,29 @@ window.VisualizerFullscreenManager = class FullscreenManager {
             </div>
         `;
         
-        // Handle click to open/close control panel
-        this.controlTrayHandle.addEventListener('click', () => {
+        // Enhanced mobile support for tray handle
+        const handleTrayToggle = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             this.toggleControlPanel();
-        });
+        };
+        
+        // Add both click and touch events
+        this.controlTrayHandle.addEventListener('click', handleTrayToggle);
+        this.controlTrayHandle.addEventListener('touchstart', handleTrayToggle);
+        
+        // Add visual feedback for mobile touches
+        if (this.isMobile) {
+            this.controlTrayHandle.addEventListener('touchstart', () => {
+                this.controlTrayHandle.style.backgroundColor = 'rgba(59, 130, 246, 0.9)';
+            });
+            
+            this.controlTrayHandle.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    this.controlTrayHandle.style.backgroundColor = '';
+                }, 150);
+            });
+        }
         
         this.visualizer.container.appendChild(this.controlTrayHandle);
     }
@@ -516,7 +612,32 @@ window.VisualizerFullscreenManager = class FullscreenManager {
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
         `;
-        this.controlPanelCloseButton.addEventListener('click', () => this.closeControlPanel());
+        
+        // Enhanced mobile support for close button
+        const handleClosePanel = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeControlPanel();
+        };
+        
+        // Add both click and touch events
+        this.controlPanelCloseButton.addEventListener('click', handleClosePanel);
+        this.controlPanelCloseButton.addEventListener('touchstart', handleClosePanel);
+        
+        // Add visual feedback for mobile touches
+        if (this.isMobile) {
+            this.controlPanelCloseButton.addEventListener('touchstart', () => {
+                this.controlPanelCloseButton.style.backgroundColor = 'rgba(220, 38, 38, 0.2)';
+                this.controlPanelCloseButton.style.transform = 'scale(1.1)';
+            });
+            
+            this.controlPanelCloseButton.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    this.controlPanelCloseButton.style.backgroundColor = '';
+                    this.controlPanelCloseButton.style.transform = '';
+                }, 150);
+            });
+        }
         
         // Insert at the beginning of the control panel
         controlPanel.insertBefore(this.controlPanelCloseButton, controlPanel.firstChild);
