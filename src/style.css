@@ -49,6 +49,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
+    margin:20px 0
 }
 
 /* Control Groups */
@@ -194,6 +195,25 @@
     font-style: italic;
 }
 
+/* Effects Row */
+.visualizer-effects-row {
+    margin: 1.5rem 0 1rem 0;
+    padding: 1rem;
+    background: #f3f4f6;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+.visualizer-effects-row .visualizer-control-group {
+    margin: 0;
+}
+
+.visualizer-effects-row .visualizer-control-group__label {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
 /* Error State */
 .visualizer-error {
     padding: 1rem;
@@ -256,15 +276,14 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     border-radius: 0;
     box-shadow: none;
 }
 
 .visualizer-fullscreen .visualizer-canvas {
-    width: 100%;
-    height: 100%;
+    display: block;
 }
 
 .visualizer-fullscreen .visualizer-controls {
@@ -285,12 +304,16 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
     transform: translateY(0);
     z-index: 10000;
+    min-height: 0;
+    max-height: 40vh;
+    overflow-y: auto;
 }
 
 .visualizer-fullscreen .visualizer-controls.visualizer-controls-hidden {
     opacity: 0;
     transform: translateY(100%);
     pointer-events: none;
+    visibility: hidden;
 }
 
 .visualizer-fullscreen .visualizer-controls__grid {
@@ -333,6 +356,139 @@
     pointer-events: none;
 }
 
+/* Pull-Up Tray System */
+.visualizer-control-tray-handle {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    min-width: 120px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.visualizer-control-tray-handle:hover {
+    background: rgba(59, 130, 246, 0.9);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateX(-50%) translateY(-4px);
+    box-shadow: 0 -8px 30px rgba(59, 130, 246, 0.4);
+}
+
+.visualizer-control-tray-handle.visualizer-control-tray-handle-hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100%);
+    pointer-events: none;
+}
+
+.tray-handle-icon {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.tray-handle-icon svg {
+    transition: transform 0.3s ease;
+}
+
+.visualizer-control-tray-handle:hover .tray-handle-icon svg {
+    transform: translateY(-2px);
+}
+
+/* Control Panel Close Button */
+.visualizer-control-panel-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    border-radius: 50%;
+    color: #dc2626;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10002;
+}
+
+.visualizer-control-panel-close:hover {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: scale(1.1);
+}
+
+.visualizer-control-panel-close:active {
+    transform: scale(0.95);
+}
+
+/* Enhanced fullscreen controls with tray system */
+.visualizer-fullscreen .visualizer-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    transform: translateY(0);
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+    margin: 0;
+    background: rgba(248, 249, 250, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(225, 229, 233, 0.5);
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10000;
+    min-height: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-top: 3rem; /* Space for close button */
+}
+
+.visualizer-fullscreen .visualizer-controls.visualizer-controls-hidden {
+    opacity: 0;
+    transform: translateY(100%);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* Improved scrollbar for fullscreen panel */
+.visualizer-fullscreen .visualizer-controls::-webkit-scrollbar {
+    width: 6px;
+}
+
+.visualizer-fullscreen .visualizer-controls::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.visualizer-fullscreen .visualizer-controls::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+.visualizer-fullscreen .visualizer-controls::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
 /* Body fullscreen styles */
 .visualizer-fullscreen-active {
     overflow: hidden;
@@ -342,19 +498,16 @@
 @media (max-width: 768px) {
     .visualizer-fullscreen .visualizer-controls {
         width: 100%;
-        left: 0;
-        right: 0;
-        margin: 0;
-        transform: translateY(0);
+        max-height: 60vh;
     }
     
-    .visualizer-fullscreen .visualizer-controls.visualizer-controls-hidden {
-        transform: translateY(100%);
+    .visualizer-control-tray-handle {
+        min-width: 100px;
+        padding: 0.5rem 1rem;
     }
     
-    .visualizer-fullscreen .visualizer-controls__grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.5rem;
+    .tray-handle-icon {
+        font-size: 0.8rem;
     }
     
     .visualizer-fullscreen-exit {
@@ -363,21 +516,49 @@
         width: 40px;
         height: 40px;
     }
+    
+    .visualizer-control-panel-close {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 28px;
+        height: 28px;
+    }
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .visualizer-controls__grid {
-        grid-template-columns: 1fr;
+/* Animation performance optimization */
+.visualizer-control-tray-handle,
+.visualizer-fullscreen .visualizer-controls {
+    will-change: transform, opacity;
+}
+
+/* Smooth entrance animation for tray handle */
+@keyframes traySlideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(100%);
     }
-    
-    .visualizer-controls {
-        padding: 1rem;
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
-    
-    .visualizer-canvas-container {
-        width: 100%;
+}
+
+.visualizer-control-tray-handle:not(.visualizer-control-tray-handle-hidden) {
+    animation: traySlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulse animation hint for first-time users */
+@keyframes trayPulse {
+    0%, 100% {
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     }
+    50% {
+        box-shadow: 0 -4px 20px rgba(59, 130, 246, 0.5), 0 -8px 30px rgba(59, 130, 246, 0.3);
+    }
+}
+
+.visualizer-control-tray-handle.tray-hint {
+    animation: trayPulse 2s ease-in-out infinite;
 }
 
 /* Editor-specific styles */

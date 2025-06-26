@@ -1,13 +1,13 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "visualizer-block/visualizer",
-    "version": "1.0.0",
-    "title": "Particle System",
+    "version": "0.3.1",
+    "title": "Particle Visualizer",
     "category": "widgets",
-    "icon": "chart-area",
-    "description": "Interactive particle system with customizable effects, shapes, and mouse interactions.",
-    "keywords": ["particles", "animation", "canvas", "interactive", "effects"],
+    "icon": "chart-line",
+    "description": "Interactive particle visualization with customizable effects",
+    "keywords": ["animation", "particles", "visual", "interactive"],
     "textdomain": "visualizer-block",
     "supports": {
         "html": false,
@@ -22,21 +22,17 @@
         }
     },
     "attributes": {
-        "aspectRatio": {
-            "type": "number",
-            "default": 0.75
-        },
         "backgroundColor": {
             "type": "string",
-            "default": "#000000"
+            "default": "#0a0a0a"
         },
         "primaryColor": {
             "type": "string",
-            "default": "#00c2ff"
+            "default": "#64ffda"
         },
         "secondaryColor": {
             "type": "string",
-            "default": "#ff0000"
+            "default": "#ff6b9d"
         },
         "animationSpeed": {
             "type": "number",
@@ -44,15 +40,11 @@
         },
         "particleCount": {
             "type": "number",
-            "default": 100
+            "default": 150
         },
         "particleSize": {
             "type": "number",
             "default": 3
-        },
-        "particleShape": {
-            "type": "string",
-            "default": "circle"
         },
         "connectionDistance": {
             "type": "number",
@@ -60,9 +52,29 @@
         },
         "mouseInteraction": {
             "type": "string",
-            "default": "attract"
+            "default": "none"
         },
-        "showTrails": {
+        "bounceOffWalls": {
+            "type": "boolean",
+            "default": false
+        },
+        "rubberizeParticles": {
+            "type": "boolean",
+            "default": false
+        },
+        "particleMagnetism": {
+            "type": "boolean",
+            "default": false
+        },
+        "collisionColorChange": {
+            "type": "boolean",
+            "default": false
+        },
+        "audioSync": {
+            "type": "boolean",
+            "default": false
+        },
+        "glowEffect": {
             "type": "boolean",
             "default": false
         },
@@ -73,6 +85,5 @@
     },
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/index.css",
-    "style": "file:./src/style.css",
-    "viewScript": "file:./src/visualizer.js"
+    "style": "file:./build/index.css"
 } 

@@ -33,22 +33,12 @@ window.VisualizerControlCenter = class ControlCenter {
             <h3 class="visualizer-controls__title">Particle System Controls</h3>
             <div class="visualizer-controls__grid">
                 <div class="visualizer-control-group">
-                    <label class="visualizer-control-group__label">Particle Shape</label>
-                    <select class="visualizer-control-select" data-control="particleShape">
-                        <option value="circle" ${config.particleShape === 'circle' ? 'selected' : ''}>Circles</option>
-                        <option value="square" ${config.particleShape === 'square' ? 'selected' : ''}>Squares</option>
-                        <option value="triangle" ${config.particleShape === 'triangle' ? 'selected' : ''}>Triangles</option>
-                        <option value="star" ${config.particleShape === 'star' ? 'selected' : ''}>Stars</option>
-                    </select>
-                </div>
-                
-                <div class="visualizer-control-group">
                     <label class="visualizer-control-group__label">Mouse Interaction</label>
                     <select class="visualizer-control-select" data-control="mouseInteraction">
                         <option value="none" ${config.mouseInteraction === 'none' ? 'selected' : ''}>None</option>
                         <option value="attract" ${config.mouseInteraction === 'attract' ? 'selected' : ''}>Attract</option>
                         <option value="repel" ${config.mouseInteraction === 'repel' ? 'selected' : ''}>Repel</option>
-                        <option value="orbit" ${config.mouseInteraction === 'orbit' ? 'selected' : ''}>Orbit</option>
+                        <option value="push" ${config.mouseInteraction === 'push' ? 'selected' : ''}>Orbital</option>
                     </select>
                 </div>
                 
@@ -72,11 +62,13 @@ window.VisualizerControlCenter = class ControlCenter {
                         <input type="color" class="visualizer-color-input" value="${config.backgroundColor}" data-control="backgroundColor">
                     </div>
                 </div>
-                
+            </div>
+            
+            <div class="visualizer-controls__grid">
                 <div class="visualizer-control-group">
                     <label class="visualizer-control-group__label">Particle Count</label>
                     <div class="visualizer-range-control">
-                        <input type="range" class="visualizer-range-input" min="10" max="500" step="10" value="${config.particleCount}" data-control="particleCount">
+                        <input type="range" class="visualizer-range-input" min="10" max="1000" step="10" value="${config.particleCount}" data-control="particleCount">
                         <div class="visualizer-range-value">${config.particleCount}</div>
                     </div>
                 </div>
@@ -106,6 +98,42 @@ window.VisualizerControlCenter = class ControlCenter {
                 </div>
             </div>
             
+            <div class="visualizer-effects-row">
+                <div class="visualizer-control-group">
+                    <label class="visualizer-control-group__label">Physics Effects</label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.bounceOffWalls ? 'checked' : ''} data-control="bounceOffWalls">
+                        Bounce Off Walls
+                    </label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.rubberizeParticles ? 'checked' : ''} data-control="rubberizeParticles">
+                        Rubberize Particles
+                    </label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.particleMagnetism ? 'checked' : ''} data-control="particleMagnetism">
+                        Particle Magnetism
+                    </label>
+                </div>
+            </div>
+            
+            <div class="visualizer-effects-row">
+                <div class="visualizer-control-group">
+                    <label class="visualizer-control-group__label">Visual Effects</label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.collisionColorChange ? 'checked' : ''} data-control="collisionColorChange">
+                        Collision Color Change
+                    </label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.glowEffect ? 'checked' : ''} data-control="glowEffect">
+                        Particle Glow Effect
+                    </label>
+                    <label class="visualizer-checkbox-control">
+                        <input type="checkbox" ${config.audioSync ? 'checked' : ''} data-control="audioSync">
+                        Audio Sync (Microphone)
+                    </label>
+                </div>
+            </div>
+            
             <div class="visualizer-fullscreen-controls">
                 <button class="visualizer-fullscreen-btn" data-action="fullscreen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -128,6 +156,10 @@ window.VisualizerControlCenter = class ControlCenter {
             control.addEventListener('change', (e) => {
                 this.handleControlChange(property, e.target.value, e.target);
             });
+            
+            control.addEventListener('input', (e) => {
+                this.handleControlChange(property, e.target.value, e.target);
+            });
         });
         
         // Fullscreen button
@@ -145,10 +177,15 @@ window.VisualizerControlCenter = class ControlCenter {
             value = parseFloat(value);
         }
         
+        // Convert boolean values for checkboxes
+        if (element.type === 'checkbox') {
+            value = element.checked;
+        }
+        
         // Update config
         this.visualizer.config[property] = value;
         
-        // Notify visualizer of change
+        // Notify visualizer of change (this will handle audio sync toggle)
         this.visualizer.onConfigChange(property, value);
         
         // Update range value display
@@ -165,7 +202,11 @@ window.VisualizerControlCenter = class ControlCenter {
         const valueDisplay = this.container.querySelector(`[data-control="${property}"]`)?.parentNode?.querySelector('.visualizer-range-value');
         
         if (control) {
-            control.value = value;
+            if (control.type === 'checkbox') {
+                control.checked = value;
+            } else {
+                control.value = value;
+            }
         }
         if (valueDisplay) {
             valueDisplay.textContent = value;

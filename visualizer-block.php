@@ -72,20 +72,26 @@ class VisualizerBlock {
      * Render block callback
      */
     public function renderBlock($attributes, $content, $block) {
-        $config = wp_json_encode([
-            'aspectRatio' => floatval($attributes['aspectRatio'] ?? 0.75),
-            'backgroundColor' => sanitize_hex_color($attributes['backgroundColor'] ?? '#000000'),
-            'primaryColor' => sanitize_hex_color($attributes['primaryColor'] ?? '#00ff00'),
-            'secondaryColor' => sanitize_hex_color($attributes['secondaryColor'] ?? '#ff0000'),
+        // Sanitize and prepare configuration
+        $config = array(
+            'backgroundColor' => sanitize_hex_color($attributes['backgroundColor'] ?? '#0a0a0a'),
+            'primaryColor' => sanitize_text_field($attributes['primaryColor'] ?? '#64ffda'),
+            'secondaryColor' => sanitize_text_field($attributes['secondaryColor'] ?? '#ff6b9d'),
             'animationSpeed' => floatval($attributes['animationSpeed'] ?? 1),
-            'particleCount' => intval($attributes['particleCount'] ?? 100),
+            'particleCount' => intval($attributes['particleCount'] ?? 150),
             'particleSize' => floatval($attributes['particleSize'] ?? 3),
-            'particleShape' => sanitize_text_field($attributes['particleShape'] ?? 'circle'),
             'connectionDistance' => intval($attributes['connectionDistance'] ?? 100),
-            'mouseInteraction' => sanitize_text_field($attributes['mouseInteraction'] ?? 'attract'),
-            'showTrails' => boolval($attributes['showTrails'] ?? false),
-            'showControls' => boolval($attributes['showControls'] ?? true)
-        ]);
+            'mouseInteraction' => sanitize_text_field($attributes['mouseInteraction'] ?? 'none'),
+            'bounceOffWalls' => (bool)($attributes['bounceOffWalls'] ?? false),
+            'rubberizeParticles' => (bool)($attributes['rubberizeParticles'] ?? false),
+            'particleMagnetism' => (bool)($attributes['particleMagnetism'] ?? false),
+            'collisionColorChange' => (bool)($attributes['collisionColorChange'] ?? false),
+            'audioSync' => (bool)($attributes['audioSync'] ?? false),
+            'glowEffect' => (bool)($attributes['glowEffect'] ?? false),
+            'showControls' => (bool)($attributes['showControls'] ?? true)
+        );
+        
+        $config = wp_json_encode($config);
         
         $wrapper_attributes = get_block_wrapper_attributes([
             'class' => 'visualizer-block-container',
@@ -111,29 +117,124 @@ class VisualizerBlock {
                 filemtime(plugin_dir_path(__FILE__) . 'src/style.css')
             );
             
-            // Enqueue individual modules first
+            // Enqueue size-scale utility first (no dependencies) - moved to rendering/
+            wp_enqueue_script(
+                'visualizer-block-size-scale',
+                plugin_dir_url(__FILE__) . 'src/rendering/size-scale.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/rendering/size-scale.js'),
+                true
+            );
+            
+            // Enqueue connection renderer (depends on visual effects) - rendering/
+            wp_enqueue_script(
+                'visualizer-block-connection-renderer',
+                plugin_dir_url(__FILE__) . 'src/rendering/connection-renderer.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/rendering/connection-renderer.js'),
+                true
+            );
+            
+            // Enqueue collision detector (no dependencies) - moved to physics/
+            wp_enqueue_script(
+                'visualizer-block-collision-detector',
+                plugin_dir_url(__FILE__) . 'src/physics/collision-detector.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/physics/collision-detector.js'),
+                true
+            );
+            
+            // Enqueue visual effects (no dependencies) - moved to visual-effects/
+            wp_enqueue_script(
+                'visualizer-block-visual-effects',
+                plugin_dir_url(__FILE__) . 'src/visual-effects/visual-effects.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/visual-effects/visual-effects.js'),
+                true
+            );
+            
+            // Enqueue glow effect module (visual effects category)
+            wp_enqueue_script(
+                'visualizer-block-glow-effect',
+                plugin_dir_url(__FILE__) . 'src/visual-effects/glow-effect.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/visual-effects/glow-effect.js'),
+                true
+            );
+            
+            // Enqueue individual modules - moved to interaction/
             wp_enqueue_script(
                 'visualizer-block-fullscreen-manager',
-                plugin_dir_url(__FILE__) . 'src/fullscreen-manager.js',
+                plugin_dir_url(__FILE__) . 'src/interaction/fullscreen-manager.js',
                 [],
-                filemtime(plugin_dir_path(__FILE__) . 'src/fullscreen-manager.js'),
+                filemtime(plugin_dir_path(__FILE__) . 'src/interaction/fullscreen-manager.js'),
+                true
+            );
+            
+            wp_enqueue_script(
+                'visualizer-block-mouse-interaction',
+                plugin_dir_url(__FILE__) . 'src/interaction/mouse-interaction.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/interaction/mouse-interaction.js'),
+                true
+            );
+            
+            wp_enqueue_script(
+                'visualizer-block-physics-effects',
+                plugin_dir_url(__FILE__) . 'src/physics/physics-effects.js',
+                ['visualizer-block-size-scale'], // Depends on size-scale utility
+                filemtime(plugin_dir_path(__FILE__) . 'src/physics/physics-effects.js'),
                 true
             );
             
             wp_enqueue_script(
                 'visualizer-block-control-center',
-                plugin_dir_url(__FILE__) . 'src/control-center.js',
+                plugin_dir_url(__FILE__) . 'src/ui/control-center.js',
                 [],
-                filemtime(plugin_dir_path(__FILE__) . 'src/control-center.js'),
+                filemtime(plugin_dir_path(__FILE__) . 'src/ui/control-center.js'),
                 true
             );
             
-            // Enqueue main visualizer (depends on modules)
+            // Enqueue audio modules
+            wp_enqueue_script(
+                'visualizer-block-audio-analyzer',
+                plugin_dir_url(__FILE__) . 'src/audio/audio-analyzer.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/audio/audio-analyzer.js'),
+                true
+            );
+            
+            // NEW: Enqueue audio intensity module (centralized volume-spike detector)
+            wp_enqueue_script(
+                'visualizer-block-audio-intensity',
+                plugin_dir_url(__FILE__) . 'src/audio/audio-intensity.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/audio/audio-intensity.js'),
+                true
+            );
+            
+            wp_enqueue_script(
+                'visualizer-block-audio-color-effects',
+                plugin_dir_url(__FILE__) . 'src/audio/audio-color-effects.js',
+                [],
+                filemtime(plugin_dir_path(__FILE__) . 'src/audio/audio-color-effects.js'),
+                true
+            );
+            
+            wp_enqueue_script(
+                'visualizer-block-audio-effects',
+                plugin_dir_url(__FILE__) . 'src/audio/audio-effects.js',
+                ['visualizer-block-audio-analyzer', 'visualizer-block-audio-intensity', 'visualizer-block-audio-color-effects'],
+                filemtime(plugin_dir_path(__FILE__) . 'src/audio/audio-effects.js'),
+                true
+            );
+            
+            // Enqueue main visualizer (depends on modules) - moved to core/
             wp_enqueue_script(
                 'visualizer-block-frontend',
-                plugin_dir_url(__FILE__) . 'src/visualizer.js',
-                ['visualizer-block-fullscreen-manager', 'visualizer-block-control-center'],
-                filemtime(plugin_dir_path(__FILE__) . 'src/visualizer.js'),
+                plugin_dir_url(__FILE__) . 'src/core/visualizer.js',
+                ['visualizer-block-fullscreen-manager', 'visualizer-block-mouse-interaction', 'visualizer-block-collision-detector', 'visualizer-block-visual-effects', 'visualizer-block-glow-effect', 'visualizer-block-physics-effects', 'visualizer-block-control-center', 'visualizer-block-connection-renderer', 'visualizer-block-audio-analyzer', 'visualizer-block-audio-intensity', 'visualizer-block-audio-color-effects', 'visualizer-block-audio-effects'],
+                filemtime(plugin_dir_path(__FILE__) . 'src/core/visualizer.js'),
                 true
             );
         }

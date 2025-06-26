@@ -224,3 +224,167 @@ Created by Chris Huber (https://chubes.net)
 ## Version
 
 1.0.0 
+
+## Recent Fixes
+
+### Audio Sync Collision Detection (Latest)
+Fixed an issue where collision detection was inaccurate when audio sync was enabled:
+
+- **Problem**: Collision hitboxes used base particle size while rendering used audio-enlarged size
+- **Solution**: Enhanced collision detection to account for audio size multipliers
+- **Impact**: Collision detection now matches visual particle size during audio swelling
+- **Files modified**: `src/physics/collision-detector.js`
+
+The collision detector now includes a `getEffectiveParticleSize()` method that applies the same audio size multiplier used in rendering, ensuring collision accuracy when particles swell with bass/volume.
+
+### Magnetic Burst Effects (New Feature)
+Added dramatic cluster breakup effects when magnetism and audio sync are both enabled:
+
+- **Feature**: Audio spikes temporarily convert magnetism from attraction to repulsion with enhanced range and power
+- **Effect**: Creates explosive "burst" effects that break up magnetic clusters and scatter particles
+- **Trigger**: Volume spikes above 75% threshold with 1.5x volume increase over previous level
+- **Duration**: 400ms burst duration with 300ms cooldown between bursts
+- **Parameters**: 
+  - **Range multiplier**: 2.5x normal magnetic range during burst
+  - **Power multiplier**: 3x normal magnetic strength during burst
+  - **Conversion**: Attraction becomes repulsion for dramatic scatter effect
+- **Files modified**: `src/audio/audio-effects.js`, `src/physics/physics-effects.js`
+
+This creates a spectacular effect where tight magnetic clusters explode outward on music peaks, then reform as the burst fades, adding rhythmic drama to magnetism visualizations.
+
+### 3-Tier Magnetic Inversion System (Latest)
+Replaced simple magnetic bursts with a sophisticated tolerance-based inversion system:
+
+- **Concept**: Audio volume spikes dynamically adjust the attraction/repulsion "tolerance level"
+- **Effect**: Creates nuanced burst patterns where closer particles repel while distant ones still attract
+- **Enhanced Sensitivity**: 20% more responsive with lower thresholds and stronger effects
+- **3-Tier System**:
+  - **Tier 1 (55-65% volume)**: 36% tolerance reduction, 1.44x power boost - gentle burst effects
+  - **Tier 2 (65-75% volume)**: 72% tolerance reduction, 2.16x power boost - moderate cluster breakup  
+  - **Tier 3 (75%+ volume)**: 100% tolerance reduction, 3.0x power boost - dramatic explosions
+- **Smart Timing**: 420ms duration per tier, 160ms cooldown between tier changes
+- **Dynamic Range**: Each tier creates different visual patterns based on how close particles are
+- **Files modified**: `src/audio/audio-effects.js`, `src/physics/physics-effects.js`
+
+This creates incredibly sophisticated burst effects where the intensity and pattern of cluster breakup varies smoothly with music dynamics, from subtle ripples to explosive scattering.
+
+## Performance Optimizations
+
+### Frame Rate Management
+- **Adaptive processing**: Audio, physics, and collision systems scale processing frequency based on particle count
+- **Smart batching**: Color and opacity-based particle rendering batches
+- **Early culling**: Distance and opacity thresholds prevent unnecessary calculations
+
+### Collision Detection
+- **Spatial partitioning**: O(n²) to O(n) collision detection optimization
+- **Forward neighbor checking**: Eliminates duplicate collision checks
+- **Audio-aware grid sizing**: Spatial grid adapts to audio-enlarged particle sizes
+
+### Audio Processing
+- **Efficient FFT**: 256-sample analysis for balance of resolution and performance
+- **Smoothed responses**: Prevents jarring visual changes
+- **Magnetism compatibility**: Audio effects adapt behavior when other physics are active
+
+## Architecture
+
+### Modular Design
+- `src/core/` - Main visualizer logic
+- `src/audio/` - Audio analysis and effects
+- `src/physics/` - Collision detection and physics
+- `src/rendering/` - Connection and particle rendering
+- `src/visual-effects/` - Color effects and visual enhancements
+- `src/interaction/` - Mouse and fullscreen management
+- `src/ui/` - Control center interface
+
+### Performance Philosophy
+Built on KISS (Keep It Simple, Stupid) and DRY (Don't Repeat Yourself) principles with aggressive performance optimization. All effects scale gracefully from low-end to high-end hardware.
+
+### Audio-Reactive Visualizations
+- **Real-time microphone analysis** with frequency separation (bass, mid, high)
+- **Audio-reactive color waves** with 128-color spectrum system
+- **Motion effects**: Beat detection, volume peaks, frequency-based turbulence
+- **Audio + collision integration**: Particle collision history offsets position in global audio wave
+- **Accurate collision detection**: Hitboxes match visual size when audio sync is enabled
+- **3-tier magnetic inversion**: Sophisticated volume-based tolerance adjustment creating nuanced burst patterns
+
+## Recent Fixes
+
+### Audio Sync Collision Detection (Latest)
+Fixed an issue where collision detection was inaccurate when audio sync was enabled:
+
+- **Problem**: Collision hitboxes used base particle size while rendering used audio-enlarged size
+- **Solution**: Enhanced collision detection to account for audio size multipliers
+- **Impact**: Collision detection now matches visual particle size during audio swelling
+- **Files modified**: `src/physics/collision-detector.js`
+
+The collision detector now includes a `getEffectiveParticleSize()` method that applies the same audio size multiplier used in rendering, ensuring collision accuracy when particles swell with bass/volume.
+
+### Magnetic Burst Effects (New Feature)
+Added dramatic cluster breakup effects when magnetism and audio sync are both enabled:
+
+- **Feature**: Audio spikes temporarily convert magnetism from attraction to repulsion with enhanced range and power
+- **Effect**: Creates explosive "burst" effects that break up magnetic clusters and scatter particles
+- **Trigger**: Volume spikes above 75% threshold with 1.5x volume increase over previous level
+- **Duration**: 400ms burst duration with 300ms cooldown between bursts
+- **Parameters**: 
+  - **Range multiplier**: 2.5x normal magnetic range during burst
+  - **Power multiplier**: 3x normal magnetic strength during burst
+  - **Conversion**: Attraction becomes repulsion for dramatic scatter effect
+- **Files modified**: `src/audio/audio-effects.js`, `src/physics/physics-effects.js`
+
+This creates a spectacular effect where tight magnetic clusters explode outward on music peaks, then reform as the burst fades, adding rhythmic drama to magnetism visualizations.
+
+### 3-Tier Magnetic Inversion System (Latest)
+Replaced simple magnetic bursts with a sophisticated tolerance-based inversion system:
+
+- **Concept**: Audio volume spikes dynamically adjust the attraction/repulsion "tolerance level"
+- **Effect**: Creates nuanced burst patterns where closer particles repel while distant ones still attract
+- **Enhanced Sensitivity**: 20% more responsive with lower thresholds and stronger effects
+- **3-Tier System**:
+  - **Tier 1 (55-65% volume)**: 36% tolerance reduction, 1.44x power boost - gentle burst effects
+  - **Tier 2 (65-75% volume)**: 72% tolerance reduction, 2.16x power boost - moderate cluster breakup  
+  - **Tier 3 (75%+ volume)**: 100% tolerance reduction, 3.0x power boost - dramatic explosions
+- **Smart Timing**: 420ms duration per tier, 160ms cooldown between tier changes
+- **Dynamic Range**: Each tier creates different visual patterns based on how close particles are
+- **Files modified**: `src/audio/audio-effects.js`, `src/physics/physics-effects.js`
+
+This creates incredibly sophisticated burst effects where the intensity and pattern of cluster breakup varies smoothly with music dynamics, from subtle ripples to explosive scattering.
+
+## Performance Optimizations
+
+### Frame Rate Management
+- **Adaptive processing**: Audio, physics, and collision systems scale processing frequency based on particle count
+- **Smart batching**: Color and opacity-based particle rendering batches
+- **Early culling**: Distance and opacity thresholds prevent unnecessary calculations
+
+### Collision Detection
+- **Spatial partitioning**: O(n²) to O(n) collision detection optimization
+- **Forward neighbor checking**: Eliminates duplicate collision checks
+- **Audio-aware grid sizing**: Spatial grid adapts to audio-enlarged particle sizes
+
+### Audio Processing
+- **Efficient FFT**: 256-sample analysis for balance of resolution and performance
+- **Smoothed responses**: Prevents jarring visual changes
+- **Magnetism compatibility**: Audio effects adapt behavior when other physics are active
+
+## Architecture
+
+### Modular Design
+- `src/core/` - Main visualizer logic
+- `src/audio/` - Audio analysis and effects
+- `src/physics/` - Collision detection and physics
+- `src/rendering/` - Connection and particle rendering
+- `src/visual-effects/` - Color effects and visual enhancements
+- `src/interaction/` - Mouse and fullscreen management
+- `src/ui/` - Control center interface
+
+### Performance Philosophy
+Built on KISS (Keep It Simple, Stupid) and DRY (Don't Repeat Yourself) principles with aggressive performance optimization. All effects scale gracefully from low-end to high-end hardware.
+
+### Audio-Reactive Visualizations
+- **Real-time microphone analysis** with frequency separation (bass, mid, high)
+- **Audio-reactive color waves** with 128-color spectrum system
+- **Motion effects**: Beat detection, volume peaks, frequency-based turbulence
+- **Audio + collision integration**: Particle collision history offsets position in global audio wave
+- **Accurate collision detection**: Hitboxes match visual size when audio sync is enabled
+- **3-tier magnetic inversion**: Sophisticated volume-based tolerance adjustment creating nuanced burst patterns 
