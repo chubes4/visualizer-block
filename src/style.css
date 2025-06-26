@@ -33,7 +33,7 @@
 .visualizer-controls {
     margin-top: 1.5rem;
     padding: 1.5rem;
-    background: #f8f9fa;
+    background: inherit;
     border-radius: 8px;
     border: 1px solid #e1e5e9;
 }
@@ -42,7 +42,7 @@
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1e1e1e;
+    color: inherit;
 }
 
 .visualizer-controls__grid {
@@ -62,7 +62,7 @@
 .visualizer-control-group__label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: inherit;
     margin: 0;
 }
 
@@ -72,7 +72,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    color: #374151;
+    color: inherit;
     cursor: pointer;
     margin: 0;
 }
@@ -88,7 +88,6 @@
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 0.875rem;
-    background: #fff;
     transition: border-color 0.2s;
 }
 
@@ -103,7 +102,6 @@
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 0.875rem;
-    background: #fff;
     cursor: pointer;
     transition: border-color 0.2s;
 }
@@ -199,7 +197,7 @@
 .visualizer-effects-row {
     margin: 1.5rem 0 1rem 0;
     padding: 1rem;
-    background: #f3f4f6;
+    background: inherit;
     border-radius: 6px;
     border: 1px solid #d1d5db;
 }
@@ -211,13 +209,11 @@
 .visualizer-effects-row .visualizer-control-group__label {
     margin-bottom: 0.75rem;
     font-weight: 600;
-    color: #1f2937;
 }
 
 /* Error State */
 .visualizer-error {
     padding: 1rem;
-    background: #fef2f2;
     border: 1px solid #fecaca;
     border-radius: 8px;
     color: #dc2626;
@@ -237,23 +233,32 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
     border: none;
     border-radius: 6px;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
+    background: #3b82f6;
+    color: white;
+    
+    /* Mobile touch optimizations */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-user-select: none;
+    user-select: none;
+    min-height: 44px; /* iOS minimum touch target */
+    min-width: 44px;
 }
 
 .visualizer-fullscreen-btn:hover {
-    background: #2563eb;
     transform: translateY(-1px);
+    background: #2563eb;
 }
 
 .visualizer-fullscreen-btn:active {
     transform: translateY(0);
+    background: #1d4ed8;
 }
 
 .visualizer-fullscreen-btn svg {
@@ -295,7 +300,7 @@
     max-width: none;
     min-width: auto;
     margin: 0;
-    background: rgba(248, 249, 250, 0.95);
+    background: inherit;
     backdrop-filter: blur(10px);
     border: none;
     border-top: 1px solid rgba(225, 229, 233, 0.5);
@@ -447,7 +452,6 @@
     max-width: none;
     min-width: auto;
     margin: 0;
-    background: rgba(248, 249, 250, 0.95);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(225, 229, 233, 0.5);
     border-bottom: none;
@@ -523,6 +527,18 @@
         width: 28px;
         height: 28px;
     }
+    
+    .visualizer-fullscreen-btn {
+        padding: 1rem 2rem; /* Larger touch target on mobile */
+        font-size: 16px; /* Prevent zoom on iOS */
+        min-height: 50px;
+        border-radius: 8px;
+    }
+    
+    .visualizer-fullscreen-btn svg {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* Animation performance optimization */
@@ -564,33 +580,121 @@
 /* Editor-specific styles */
 .visualizer-block-editor .visualizer-preview {
     position: relative;
-    text-align: center;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    min-height: 200px;
 }
 
 .visualizer-block-editor .visualizer-preview-overlay {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(248, 249, 250, 0.9);
 }
 
 .visualizer-block-editor .visualizer-preview-overlay h3 {
     margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-    color: #1e1e1e;
+    color: #374151;
+    font-size: 1.2rem;
 }
 
 .visualizer-block-editor .visualizer-preview-overlay p {
-    margin: 0.25rem 0;
-    font-size: 0.875rem;
-    color: #374151;
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
 }
 
 .visualizer-block-editor .visualizer-preview-overlay small {
-    font-size: 0.75rem;
-    color: #6b7280;
+    margin-top: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+/* Mobile Fullscreen Fallback Styles */
+.visualizer-mobile-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+    overflow: hidden !important;
+    background: #000 !important;
+}
+
+.visualizer-mobile-fullscreen .visualizer-canvas-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    z-index: 1000000 !important;
+}
+
+.visualizer-mobile-fullscreen .visualizer-canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+/* Hide browser UI elements on mobile fullscreen */
+.visualizer-mobile-fullscreen * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Enhanced mobile touch targets */
+@media (max-width: 768px) {
+    .visualizer-fullscreen .visualizer-control-tray-handle,
+    .visualizer-mobile-fullscreen .visualizer-control-tray-handle {
+        height: 60px !important; /* Larger touch target */
+        font-size: 16px !important; /* Larger text */
+    }
+    
+    .visualizer-fullscreen .visualizer-fullscreen-exit,
+    .visualizer-mobile-fullscreen .visualizer-fullscreen-exit {
+        width: 60px !important; /* Larger touch target */
+        height: 60px !important;
+        font-size: 24px !important;
+        top: 10px !important;
+        right: 10px !important;
+    }
+    
+    .visualizer-fullscreen .visualizer-controls,
+    .visualizer-mobile-fullscreen .visualizer-controls {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        max-height: 70vh !important; /* More space for controls */
+    }
+    
+    .visualizer-control-panel-close {
+        width: 50px !important; /* Larger close button */
+        height: 50px !important;
+        font-size: 20px !important;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .visualizer-fullscreen .visualizer-controls,
+    .visualizer-mobile-fullscreen .visualizer-controls {
+        max-height: 60vh !important; /* Less space in landscape */
+        font-size: 14px !important;
+    }
+    
+    .visualizer-fullscreen .visualizer-control-tray-handle,
+    .visualizer-mobile-fullscreen .visualizer-control-tray-handle {
+        height: 50px !important; /* Smaller in landscape */
+        font-size: 14px !important;
+    }
 } 

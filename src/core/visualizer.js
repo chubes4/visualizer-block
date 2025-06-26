@@ -88,8 +88,8 @@ if (typeof window.ParticleSystem === 'undefined') {
             this.audioAnalyzer = new window.VisualizerAudioAnalyzer(this);
             this.audioEffects = new window.VisualizerAudioEffects(this);
             
-            // Initialize glow effect module
-            this.glowEffect = new window.VisualizerGlowEffect(this);
+            // Initialize LED glow effect module (particle-based rendering)
+            this.glowEffect = new window.VisualizerLEDGlowEffect(this);
             
             // Initialize physics effects with collision detector
             this.physicsEffects.initialize(this.collisionDetector);
@@ -280,12 +280,7 @@ if (typeof window.ParticleSystem === 'undefined') {
             // Reset canvas state after connections (in case they modified it)
             this.ctx.globalAlpha = 1.0;
             
-            // Render glow effect BEFORE particles (so particles appear on top of glow)
-            if (this.glowEffect) {
-                this.glowEffect.renderGlow(this.ctx, this.particles);
-            }
-            
-            // Draw particles ON TOP of connections and glow
+            // Draw particles (LED glow is built-in when enabled)
             this.drawParticles();
             
             // Apply audio effects (before physics to influence particle behavior)
@@ -400,7 +395,23 @@ if (typeof window.ParticleSystem === 'undefined') {
         }
         
         drawParticles() {
-            // Ultra-fast particle rendering with optimized batching
+            // Check if LED glow rendering is enabled
+            const useLEDRendering = this.glowEffect && this.glowEffect.isLEDRenderingEnabled();
+            
+            if (useLEDRendering) {
+                // LED RENDERING: Each particle renders as LED bulb with built-in glow
+                const audioData = this.glowEffect.getAudioData();
+                
+                this.particles.forEach(particle => {
+                    this.glowEffect.renderLEDParticle(this.ctx, particle, audioData);
+                });
+                
+                // Reset canvas state
+                this.ctx.globalAlpha = 1.0;
+                return;
+            }
+            
+            // NORMAL RENDERING: Ultra-fast particle rendering with optimized batching
             const particleBatches = new Map();
             
             // Calculate volume pulse effects based on audio (size scaling only)
@@ -416,14 +427,15 @@ if (typeof window.ParticleSystem === 'undefined') {
                 const color = this.visualEffects.getParticleColor(particle);
                 const opacity = particle.opacity * particle.life;
                 
-                // Create batch key combining color and opacity (rounded for better batching)
-                const roundedOpacity = Math.round(opacity * 10) / 10; // 0.1 precision for opacity
-                const batchKey = `${color}_${roundedOpacity}`;
+                // PERFORMANCE OPTIMIZATION: Use numeric batch key instead of string concatenation
+                const roundedOpacity = Math.round(opacity * 10); // Integer 0-10
+                const colorHash = this.hashColor(color); // Convert color to numeric hash
+                const batchKey = (colorHash << 8) | roundedOpacity; // Numeric key (much faster)
                 
                 if (!particleBatches.has(batchKey)) {
                     particleBatches.set(batchKey, {
                         color: color,
-                        opacity: roundedOpacity,
+                        opacity: roundedOpacity / 10, // Convert back to decimal
                         volumePulse: volumePulseMultiplier,
                         particles: []
                     });
@@ -462,6 +474,20 @@ if (typeof window.ParticleSystem === 'undefined') {
             // Reset canvas state once after all batches
             this.ctx.globalAlpha = 1.0;
             this.ctx.shadowBlur = 0;
+        }
+        
+        /**
+         * Fast color hashing for numeric batch keys
+         */
+        hashColor(colorString) {
+            // Simple hash function for color strings
+            let hash = 0;
+            for (let i = 0; i < colorString.length; i++) {
+                const char = colorString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash) & 0xFF; // Keep it small (0-255)
         }
         
         handleResize() {

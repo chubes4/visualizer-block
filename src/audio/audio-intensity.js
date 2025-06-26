@@ -20,6 +20,12 @@ window.VisualizerAudioIntensity = class AudioIntensity {
             spikeMinimum: 0.05,          // Minimum spike intensity to register (reduced from 0.1)
             spikeMaxAccumulation: 1.5,   // Maximum accumulated spike intensity
             
+            // OUTLIER FILTERING - NEW: Prevents sneezes/door slams from triggering spikes
+            outlierThreshold: 2.5,       // Spikes above 2.5x average are considered outliers (was 3.0)
+            outlierWindow: 180,          // 3 seconds of data for outlier detection (at 60fps)
+            outlierPercentile: 90,       // Use 90th percentile for outlier detection baseline
+            outlierRecoveryFrames: 120,  // 2 seconds to recover from outlier detection
+            
             // Multiple time windows for more musical detection
             shortWindow: 15,             // 15 frames (~250ms) for immediate beats
             mediumWindow: 30,            // 30 frames (~500ms) for rhythm patterns
@@ -52,6 +58,12 @@ window.VisualizerAudioIntensity = class AudioIntensity {
         this.mediumAverage = 0;          // Medium-term average  
         this.longAverage = 0;            // Long-term average
         this.targetSpikeIntensity = 0;   // Target spike intensity (before smoothing)
+        
+        // OUTLIER FILTERING state - NEW
+        this.outlierHistory = [];        // Extended history for outlier detection
+        this.outlierBaseline = 0;        // Baseline level for outlier detection (90th percentile)
+        this.outlierSuppression = 0;     // Frames remaining in outlier suppression
+        this.recentOutliers = 0;         // Count of recent outliers
         
         // AUTO-GAIN CONTROL state
         this.currentGain = 1.0;          // Current gain multiplier
@@ -91,7 +103,13 @@ window.VisualizerAudioIntensity = class AudioIntensity {
         this.longAverage = 0;
         this.targetSpikeIntensity = 0;
         
-        console.log('Audio Intensity enabled with ramp-up and auto-gain');
+        // Reset outlier filtering state - NEW
+        this.outlierHistory = [];
+        this.outlierBaseline = 0;
+        this.outlierSuppression = 0;
+        this.recentOutliers = 0;
+        
+        console.log('Audio Intensity enabled with ramp-up, auto-gain, and outlier filtering');
         return true;
     }
     
@@ -116,6 +134,12 @@ window.VisualizerAudioIntensity = class AudioIntensity {
         this.mediumAverage = 0;
         this.longAverage = 0;
         this.targetSpikeIntensity = 0;
+        
+        // Reset outlier filtering state - NEW
+        this.outlierHistory = [];
+        this.outlierBaseline = 0;
+        this.outlierSuppression = 0;
+        this.recentOutliers = 0;
         
         console.log('Audio Intensity disabled');
     }
@@ -207,10 +231,51 @@ window.VisualizerAudioIntensity = class AudioIntensity {
     }
     
     /**
-     * OPTIMIZED spike detection with proper sliding windows
+     * ENHANCED spike detection with outlier filtering and proper sliding windows
      */
     detectVolumeSpikes(volume) {
-        // Add new volume to history
+        // Add new volume to outlier history first
+        this.outlierHistory.push(volume);
+        if (this.outlierHistory.length > this.intensityParams.outlierWindow) {
+            this.outlierHistory.shift();
+        }
+        
+        // Update outlier baseline using percentile method
+        if (this.outlierHistory.length >= 30) { // Need minimum data for percentile
+            const sortedHistory = [...this.outlierHistory].sort((a, b) => a - b);
+            const percentileIndex = Math.floor(sortedHistory.length * this.intensityParams.outlierPercentile / 100);
+            this.outlierBaseline = sortedHistory[percentileIndex] || 0;
+        }
+        
+        // OUTLIER DETECTION: Check if current volume is an extreme outlier
+        const isOutlier = this.outlierBaseline > 0 && 
+                         volume > this.outlierBaseline * this.intensityParams.outlierThreshold;
+        
+        if (isOutlier) {
+            this.recentOutliers++;
+            this.outlierSuppression = this.intensityParams.outlierRecoveryFrames;
+            
+            // Log outlier detection for debugging
+            if (Math.random() < 0.1) { // 10% chance to log
+                console.log(`Outlier detected: ${(volume*100).toFixed(1)}% vs baseline ${(this.outlierBaseline*100).toFixed(1)}%`);
+            }
+            
+            // Skip spike detection for this frame
+            return;
+        }
+        
+        // Reduce outlier suppression over time
+        if (this.outlierSuppression > 0) {
+            this.outlierSuppression--;
+            // During outlier suppression, reduce spike sensitivity
+            if (this.outlierSuppression > this.intensityParams.outlierRecoveryFrames * 0.5) {
+                return; // Skip entirely for first half of recovery
+            }
+            // Gradual recovery in second half
+            volume *= (1 - this.outlierSuppression / (this.intensityParams.outlierRecoveryFrames * 0.5));
+        }
+        
+        // Add volume to spike detection history (only if not an outlier)
         this.volumeHistory.push(volume);
         
         // Maintain max window size (long window)
@@ -359,7 +424,10 @@ window.VisualizerAudioIntensity = class AudioIntensity {
             hasAnalyzer: !!this.audioAnalyzer,
             intensity: this.getIntensity(),
             magneticTier: this.getMagneticTier(),
-            volumeAverage: this.longAverage
+            volumeAverage: this.longAverage,
+            outlierBaseline: this.outlierBaseline,
+            outlierSuppression: this.outlierSuppression,
+            recentOutliers: this.recentOutliers
         };
     }
     

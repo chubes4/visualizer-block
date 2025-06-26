@@ -162,11 +162,35 @@ window.VisualizerControlCenter = class ControlCenter {
             });
         });
         
-        // Fullscreen button
+        // Fullscreen button with enhanced mobile support
         const fullscreenBtn = this.container.querySelector('[data-action="fullscreen"]');
         if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', () => {
-                this.visualizer.fullscreenManager.enterFullscreen();
+            // Add both click and touch events for better mobile compatibility
+            const handleFullscreen = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Fullscreen button triggered'); // Debug log
+                
+                // Check if fullscreen manager exists
+                if (this.visualizer.fullscreenManager) {
+                    this.visualizer.fullscreenManager.enterFullscreen();
+                } else {
+                    console.error('Fullscreen manager not found');
+                }
+            };
+            
+            fullscreenBtn.addEventListener('click', handleFullscreen);
+            fullscreenBtn.addEventListener('touchstart', handleFullscreen);
+            
+            // Add visual feedback for mobile touches
+            fullscreenBtn.addEventListener('touchstart', () => {
+                fullscreenBtn.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+            });
+            
+            fullscreenBtn.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    fullscreenBtn.style.backgroundColor = '';
+                }, 150);
             });
         }
     }

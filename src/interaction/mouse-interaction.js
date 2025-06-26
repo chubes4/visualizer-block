@@ -81,12 +81,12 @@ window.VisualizerMouseInteraction = class MouseInteraction {
                         break;
                     case 'push':
                         // Fixed orbital mode: Creates stable circular orbits around cursor
-                        const minOrbitRadius = 50; // Minimum safe distance for stable orbits
-                        const maxOrbitRadius = 140; // Maximum influence radius for orbits
+                        const minOrbitRadius = 45; // Slightly reduced for tighter orbits (was 50)
+                        const maxOrbitRadius = 150; // Slightly increased influence radius (was 140)
                         
                         if (distance > minOrbitRadius && distance < maxOrbitRadius) {
                             // First, dampen existing velocity to create stable orbits
-                            const dampening = 0.95; // Gentle velocity dampening
+                            const dampening = 0.94; // Slightly more aggressive dampening (was 0.95)
                             particle.vx *= dampening;
                             particle.vy *= dampening;
                             
@@ -95,19 +95,19 @@ window.VisualizerMouseInteraction = class MouseInteraction {
                             const unitDy = dy / distance;
                             
                             // Calculate ideal orbital velocity for stable circular motion
-                            const orbitalSpeed = 0.12; // Increased from 0.08 for faster orbits
+                            const orbitalSpeed = 0.138; // 15% increase from 0.12
                             
                             // Tangential velocity (perpendicular to radius, counterclockwise)
                             const tangentialVx = -unitDy * orbitalSpeed;
                             const tangentialVy = unitDx * orbitalSpeed;
                             
                             // Gentle centripetal acceleration toward cursor
-                            const centripetalAccel = 0.015;
+                            const centripetalAccel = 0.0173; // 15% increase from 0.015
                             const centripetalVx = -unitDx * centripetalAccel;
                             const centripetalVy = -unitDy * centripetalAccel;
                             
                             // Gravitational pull - allows moving the orbital system around
-                            const gravitationalPull = 0.035; // HAND OF GOD - massively increased from 0.008
+                            const gravitationalPull = 0.0403; // 15% increase from 0.035
                             const gravityVx = -unitDx * gravitationalPull;
                             const gravityVy = -unitDy * gravitationalPull;
                             
@@ -120,7 +120,7 @@ window.VisualizerMouseInteraction = class MouseInteraction {
                             
                         } else if (distance <= minOrbitRadius && distance > 0) {
                             // Too close - gentle push away to establish orbital distance
-                            const pushStrength = 0.1;
+                            const pushStrength = 0.115; // 15% increase from 0.1
                             particle.vx += (dx / distance) * pushStrength;
                             particle.vy += (dy / distance) * pushStrength;
                         }
